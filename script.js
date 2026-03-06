@@ -1,31 +1,56 @@
-let myform = document.getElementById('myform');
-let basic_info = document.querySelector('.basic_info');
-let image = document.querySelector('.image');
+let profile = document.getElementById('prof');
+let btn = document.getElementById('btn');
 
-myform.addEventListener('submit', function (event) {
-    event.preventDefault();
-
+btn.addEventListener('click', function(){
     let username = document.getElementById('username').value;
+    if (!username) {
+        profile.innerHTML = "<p class='error'>Please enter a username</p>";
+        return;
+    }
     console.log(username);
 
     getUserInfo(username).then(function (data) {
         console.log(data);
-        let name = data.name;
-        let followers = data.followers;
-        let following = data.following;
-        let public_repos = data.public_repos;
-        let image_url = data.avatar_url;
 
-        let info = `
-                <h2>Name = ${name}</h2>
-                <h2>Username = ${username}</h2>
-                <h2>Followers = ${followers}</h2>
-                <h2>Following = ${following}</h2>
-                <h2>Public Repos = ${public_repos}</h2>`
+        if(data.message === "Not Found"){
+            profile.innerHTML = "<p class='error'>User not found. Please try another username.</p>";
+            return;
+        }
 
-        let img_info = `<img id="img" src="${image_url}" alt="profile">`
-        basic_info.innerHTML = info;
-        image.innerHTML = img_info;
+        if(data.bio==null){
+            data.bio = "No bio found";
+        }
+        if(data.company==null){
+            data.company = "N/A";
+        }
+        if(data.blog==""){
+            data.blog = "N/A";
+        }
+
+        let info = `<img src="${data.avatar_url}" class="avatar">
+
+            <div class="info">
+                <h2>${data.name || data.login}</h2>
+                <p class="username">@${data.login}</p>
+                <p class="bio">${data.bio}</p>
+
+                <div class="stats">
+                    <p>Public Repos: ${data.public_repos}</p>
+                    <p>Followers: ${data.followers}</p>
+                    <p>Following: ${data.following}</p>
+                </div>
+
+                <div class="extra">
+                    <p><b>Location:</b> ${data.location || "Not specified"}</p>
+                    <p><b>Company:</b> ${data.company}</p>
+                    <p><b>Blog:</b> ${data.blog}</p>
+                </div>
+            </div>`
+
+        profile.innerHTML = info;
+    }).catch(function(error) {
+        console.error("Error fetching data:", error);
+        profile.innerHTML = "<p class='error'>An error occurred while fetching data.</p>";
     });
 });
 
